@@ -1288,6 +1288,15 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  # Generate message headers
+  add_custom_command(OUTPUT
+    ${CMAKE_SOURCE_DIR}/chromium_config/base/trace_event/etw_manifest/chrome_events_win.h
+    COMMAND mc.exe -u -um -h ${CMAKE_SOURCE_DIR}/chromium_config/base/trace_event/etw_manifest
+      ${CMAKE_SOURCE_DIR}/chromium/base/trace_event/etw_manifest/chrome_events_win.man
+  )
+  target_sources(chromium_sandbox PRIVATE
+    ${CMAKE_SOURCE_DIR}/chromium_config/base/trace_event/etw_manifest/chrome_events_win.h) 
+
   target_link_libraries(chromium_sandbox dbghelp winmm mincore)
 endif()
 
