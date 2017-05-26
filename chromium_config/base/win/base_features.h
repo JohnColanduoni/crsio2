@@ -1,0 +1,8 @@
+#ifndef BASE_WIN_BASE_FEATRUES_H_
+#define BASE_WIN_BASE_FEATURES_H_
+
+#include "build/buildflag.h"
+
+#define BUILDFLAG_INTERNAL_SINGLE_MODULE_MODE_HANDLE_VERIFIER() (0)
+
+#endif
