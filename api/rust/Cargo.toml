@@ -1,0 +1,10 @@
+[package]
+name = "crsio2"
+version = "0.1.0"
+
+[lib]
+path = "lib.rs"
+
+[build-dependencies]
+bindgen = "0.23"
+glob = "0.2"
