@@ -1,4 +1,5 @@
 #include "crsio2.h"
+#include "error.h"
 #include <sandbox/win/src/sandbox_factory.h>
 
 #include "target_services.h"
@@ -21,5 +22,14 @@ TargetServices* TargetServices::GetInstance() {
   return instance;
 }
 
-TargetServicesImpl::TargetServicesImpl(sandbox::TargetServices* inner) {
+TargetServicesImpl::TargetServicesImpl(sandbox::TargetServices* inner) :
+  inner_(inner)
+{}
+
+Result TargetServicesImpl::Init() {
+  return ChromiumError::AsResult(inner_->Init());
+}
+
+void TargetServicesImpl::Lower() {
+  inner_->LowerToken();
 }

@@ -5,6 +5,10 @@ version = "0.1.0"
 [lib]
 path = "lib.rs"
 
+[[test]]
+name = "basic_broker"
+harness = false
+
 [build-dependencies]
 bindgen = "0.23"
 glob = "0.2"

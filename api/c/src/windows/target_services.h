@@ -5,5 +5,11 @@ namespace crsio2 {
   class TargetServicesImpl : public TargetServices {
     public:
       TargetServicesImpl(sandbox::TargetServices*);
+
+      Result Init() override;
+      void Lower() override;
+
+    private:
+      sandbox::TargetServices* inner_;
   };
 }
