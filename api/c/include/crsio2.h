@@ -126,10 +126,6 @@ namespace crsio2 {
 }
 #endif
 
-#ifdef _WIN32
-  #include <crsio2/windows.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -178,5 +174,11 @@ void sandbox_target_services_lower(sandbox_target_services_t);
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef _WIN32
+  #include <crsio2/windows.h>
+#endif
+
+
 
 #endif

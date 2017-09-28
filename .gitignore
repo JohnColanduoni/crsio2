@@ -1,1 +1,2 @@
 chromium_config/base/trace_event/etw_manifest/chrome_events_win.h
+target/

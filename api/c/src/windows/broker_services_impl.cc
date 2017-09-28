@@ -76,6 +76,29 @@ Result BrokerServicesImpl::WaitForAllTargets() {
   return ChromiumError::AsResult(inner_->WaitForAllTargets());
 }
 
+Result PolicyImpl::SetTokenLevel(TokenLevel initial, TokenLevel lockdown) {
+  return ChromiumError::AsResult(inner_->SetTokenLevel(static_cast<sandbox::TokenLevel>(initial), static_cast<sandbox::TokenLevel>(lockdown)));
+}
+
+Result PolicyImpl::SetJobLevel(JobLevel level) {
+  return ChromiumError::AsResult(inner_->SetJobLevel(static_cast<sandbox::JobLevel>(level), 0));
+}
+
+Result PolicyImpl::SetIntegrityLevel(IntegrityLevel level) {
+  return ChromiumError::AsResult(inner_->SetIntegrityLevel(static_cast<sandbox::IntegrityLevel>(level)));
+}
+
+Result PolicyImpl::SetLowBox(const wchar_t *sid) {
+  return ChromiumError::AsResult(inner_->SetLowBox(sid));
+}
+
+Result PolicyImpl::SetStdoutHandle(void* handle) {
+  return ChromiumError::AsResult(inner_->SetStdoutHandle(handle));
+}
+Result PolicyImpl::SetStderrHandle(void* handle) {
+  return ChromiumError::AsResult(inner_->SetStdoutHandle(handle));
+}
+
 TargetProcessImpl::~TargetProcessImpl() {
   TerminateProcess(handles_.hProcess, -1000);
   CloseHandle(handles_.hProcess);
@@ -85,4 +108,27 @@ TargetProcessImpl::~TargetProcessImpl() {
 Result TargetProcessImpl::Resume() {
   ResumeThread(handles_.hThread);
   return Result::Ok();
+}
+
+sandbox_error_t sandbox_policy_set_token_level(sandbox_policy_t policy, sandbox_token_level_t initial, sandbox_token_level_t lockdown) {
+  return policy->SetTokenLevel(initial, lockdown).TakeRaw();
+}
+
+sandbox_error_t sandbox_policy_set_job_level(sandbox_policy_t policy, sandbox_job_level_t level) {
+  return policy->SetJobLevel(level).TakeRaw();
+}
+sandbox_error_t sandbox_policy_set_integrity_level(sandbox_policy_t policy, sandbox_integrity_level_t level) {
+  return policy->SetIntegrityLevel(level).TakeRaw();
+}
+
+sandbox_error_t sandbox_policy_set_low_box(sandbox_policy_t policy, const wchar_t* sid) {
+  return policy->SetLowBox(sid).TakeRaw();
+}
+
+sandbox_error_t sandbox_policy_set_stdout_handle(sandbox_policy_t policy, void* handle) {
+  return policy->SetStdoutHandle(handle).TakeRaw();
+}
+
+sandbox_error_t sandbox_policy_set_stderr_handle(sandbox_policy_t policy, void* handle) {
+  return policy->SetStderrHandle(handle).TakeRaw();
 }

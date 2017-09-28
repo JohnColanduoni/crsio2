@@ -15,6 +15,21 @@ mod sys {
 	include!(concat!(env!("OUT_DIR"), "/sys.rs"));
 }
 
+macro_rules! try_sb {
+    ($x:expr) => {
+        let error: sys::sandbox_error_t = $x;
+        if !error.is_null() {
+            return Err(Error(error));
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+#[path = "windows.rs"]
+mod platform;
+
+pub use platform::*;
+
 pub struct BrokerServices(sys::sandbox_broker_services_t);
 pub struct TargetServices(sys::sandbox_target_services_t);
 
@@ -49,15 +64,6 @@ impl Drop for Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
-
-macro_rules! try_sb {
-    ($x:expr) => {
-        let error: sys::sandbox_error_t = $x;
-        if !error.is_null() {
-            return Err(Error(error));
-        }
-    }
-}
 
 static INIT_ONCE: Once = ONCE_INIT;
 

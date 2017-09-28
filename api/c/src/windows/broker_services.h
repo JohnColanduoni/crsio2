@@ -30,6 +30,17 @@ namespace crsio2 {
         return inner_;
       }
 
+      Result SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
+
+      Result SetJobLevel(JobLevel level) override;
+
+      Result SetIntegrityLevel(IntegrityLevel level) override;
+
+      Result SetLowBox(const wchar_t *sid) override;
+
+      Result SetStdoutHandle(HANDLE handle) override;
+      Result SetStderrHandle(HANDLE handle) override;
+
     private:
       scoped_refptr<sandbox::TargetPolicy> inner_;
   };
