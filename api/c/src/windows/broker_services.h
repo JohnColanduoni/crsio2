@@ -35,11 +35,16 @@ namespace crsio2 {
       Result SetJobLevel(JobLevel level) override;
 
       Result SetIntegrityLevel(IntegrityLevel level) override;
+      Result SetDelayedIntegrityLevel(IntegrityLevel level) override;
+
+      Result SetAlternateDesktop(bool alternate_winstation) override;
 
       Result SetLowBox(const wchar_t *sid) override;
 
       Result SetStdoutHandle(HANDLE handle) override;
       Result SetStderrHandle(HANDLE handle) override;
+
+      Result AddHandleToShare(HANDLE handle) override;
 
     private:
       scoped_refptr<sandbox::TargetPolicy> inner_;
@@ -52,7 +57,15 @@ namespace crsio2 {
       {}
       virtual ~TargetProcessImpl();
 
+      uint32_t GetProcessId() override {
+        return this->handles_.dwProcessId;
+      }
+
       Result Resume() override;
+
+      PROCESS_INFORMATION* GetProcessInformation() override {
+        return &this->handles_;
+      }
     private:
       PROCESS_INFORMATION handles_;
   };

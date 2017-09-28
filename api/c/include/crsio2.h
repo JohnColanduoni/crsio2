@@ -1,6 +1,9 @@
 #ifndef CRSIO2_H_
 #define CRSIO2_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifdef _WIN32
   #include <wchar.h>
 
@@ -11,6 +14,7 @@
 #ifdef __cplusplus
 
 #include <memory>
+#include <string>
 
 namespace crsio2 {
     class Error {
@@ -19,6 +23,8 @@ namespace crsio2 {
 
       Error(const Error&) = delete;
       Error& operator=(const Error&) = delete;
+
+      virtual const char* description() = 0;
 
       protected:
         Error() {}
@@ -115,6 +121,8 @@ namespace crsio2 {
     public:
       virtual ~BaseTargetProcess() {}
 
+      virtual uint32_t GetProcessId() = 0;
+
       virtual Result Resume() = 0;
 
       BaseTargetProcess(const BaseTargetProcess&) = delete;
@@ -148,6 +156,7 @@ typedef crsio2::TargetProcess* sandbox_target_process_t;
 typedef crsio2::TargetServices* sandbox_target_services_t;
 #endif
 
+const char* sandbox_error_description(sandbox_error_t error);
 void sandbox_error_release(sandbox_error_t);
 
 sandbox_broker_services_t sandbox_get_broker_services();
@@ -165,6 +174,7 @@ sandbox_error_t sandbox_wait_for_all_targets(sandbox_broker_services_t);
 void sandbox_policy_release(sandbox_policy_t);
 
 void sandbox_target_process_release(sandbox_target_process_t);
+uint32_t sandbox_target_process_get_id(sandbox_target_process_t);
 sandbox_error_t sandbox_target_process_resume(sandbox_target_process_t);
 
 sandbox_target_services_t sandbox_get_target_services();

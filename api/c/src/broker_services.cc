@@ -49,6 +49,10 @@ void sandbox_target_process_release(sandbox_target_process_t process) {
   delete process;
 }
 
+uint32_t sandbox_target_process_get_id(sandbox_target_process_t process) {
+  return process->GetProcessId();
+}
+
 sandbox_error_t sandbox_target_process_resume(sandbox_target_process_t process) {
   return process->Resume().TakeRaw();
 }

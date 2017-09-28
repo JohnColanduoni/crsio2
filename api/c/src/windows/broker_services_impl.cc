@@ -64,7 +64,7 @@ Result BrokerServicesImpl::SpawnTarget(
     TerminateProcess(process_info.hProcess, -1000);
     CloseHandle(process_info.hProcess);
     CloseHandle(process_info.hThread);
-    return ChromiumError::AsResult(last_warning);
+    return Result::Err(new ChromiumError(last_warning, last_winerror));
   }
 
   process_out = std::make_unique<TargetProcessImpl>(process_info);
@@ -88,6 +88,15 @@ Result PolicyImpl::SetIntegrityLevel(IntegrityLevel level) {
   return ChromiumError::AsResult(inner_->SetIntegrityLevel(static_cast<sandbox::IntegrityLevel>(level)));
 }
 
+Result PolicyImpl::SetDelayedIntegrityLevel(IntegrityLevel level) {
+  return ChromiumError::AsResult(inner_->SetDelayedIntegrityLevel(static_cast<sandbox::IntegrityLevel>(level)));
+}
+
+
+Result PolicyImpl::SetAlternateDesktop(bool alternate_winstation) {
+  return ChromiumError::AsResult(inner_->SetAlternateDesktop(alternate_winstation));
+}
+
 Result PolicyImpl::SetLowBox(const wchar_t *sid) {
   return ChromiumError::AsResult(inner_->SetLowBox(sid));
 }
@@ -97,6 +106,11 @@ Result PolicyImpl::SetStdoutHandle(void* handle) {
 }
 Result PolicyImpl::SetStderrHandle(void* handle) {
   return ChromiumError::AsResult(inner_->SetStdoutHandle(handle));
+}
+
+Result PolicyImpl::AddHandleToShare(void* handle) {
+  inner_->AddHandleToShare(handle);
+  return Result::Ok();
 }
 
 TargetProcessImpl::~TargetProcessImpl() {
@@ -117,8 +131,16 @@ sandbox_error_t sandbox_policy_set_token_level(sandbox_policy_t policy, sandbox_
 sandbox_error_t sandbox_policy_set_job_level(sandbox_policy_t policy, sandbox_job_level_t level) {
   return policy->SetJobLevel(level).TakeRaw();
 }
+
 sandbox_error_t sandbox_policy_set_integrity_level(sandbox_policy_t policy, sandbox_integrity_level_t level) {
   return policy->SetIntegrityLevel(level).TakeRaw();
+}
+sandbox_error_t sandbox_policy_set_delayed_integrity_level(sandbox_policy_t policy, sandbox_integrity_level_t level) {
+  return policy->SetDelayedIntegrityLevel(level).TakeRaw();
+}
+
+sandbox_error_t sandbox_policy_set_alternate_desktop(sandbox_policy_t policy, bool alternate_winstation) {
+  return policy->SetAlternateDesktop(alternate_winstation).TakeRaw();
 }
 
 sandbox_error_t sandbox_policy_set_low_box(sandbox_policy_t policy, const wchar_t* sid) {
@@ -131,4 +153,12 @@ sandbox_error_t sandbox_policy_set_stdout_handle(sandbox_policy_t policy, void* 
 
 sandbox_error_t sandbox_policy_set_stderr_handle(sandbox_policy_t policy, void* handle) {
   return policy->SetStderrHandle(handle).TakeRaw();
+}
+
+sandbox_error_t sandbox_policy_add_handle_to_share(sandbox_policy_t policy, void* handle) {
+  return policy->AddHandleToShare(handle).TakeRaw();
+}
+
+void* sandbox_target_process_get_process_information(sandbox_target_process_t process) {
+  return (void*)process->GetProcessInformation();
 }

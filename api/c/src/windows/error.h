@@ -15,15 +15,24 @@ namespace crsio2 {
         }
       }
 
-    private:
+      const char* description() override;
+
       ChromiumError(sandbox::ResultCode code, DWORD win32_err) :
         code_(code),
-        win32_err_(win32_err)
+        win32_err_(win32_err),
+        win32_err_string_(nullptr)
       {}
 
-      virtual ~ChromiumError() {}
+    private:
+
+      virtual ~ChromiumError() {
+        if(win32_err_string_ != nullptr)
+          LocalFree((void*)win32_err_string_);
+      }
 
       sandbox::ResultCode code_;
       DWORD win32_err_;
+
+      const char* win32_err_string_;
   };
 }

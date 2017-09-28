@@ -6,7 +6,8 @@ add_library(crsio2
   src/error.cc
   src/broker_services.cc
   src/target_services.cc
-  
+
+  src/windows/error.cc 
   src/windows/broker_services_impl.cc
   src/windows/target_services_impl.cc
 )

@@ -1,8 +1,9 @@
 use std::path::Path;
+use std::fmt;
 use std::io;
 use std::sync::{Once, ONCE_INIT};
 use std::ptr;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, CStr};
 #[cfg(target_os = "windows")]
 use std::os::windows::ffi::OsStrExt;
 
@@ -54,7 +55,6 @@ impl Drop for TargetProcess {
     }
 }
 
-#[derive(Debug)]
 pub struct Error(sys::sandbox_error_t);
 
 impl Drop for Error {
@@ -64,6 +64,14 @@ impl Drop for Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+impl fmt::Debug for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let message = unsafe { CStr::from_ptr(sys::sandbox_error_description(self.0)) };
+
+        write!(f, "{}", message.to_string_lossy())
+    }
+}
 
 static INIT_ONCE: Once = ONCE_INIT;
 
@@ -148,6 +156,12 @@ impl TargetProcess {
         unsafe {
             try_sb!(sys::sandbox_target_process_resume(self.0));
             Ok(())
+        }
+    }
+
+    pub fn get_process_id(&self) -> u32 {
+        unsafe {
+            sys::sandbox_target_process_get_id(self.0)
         }
     }
 }
