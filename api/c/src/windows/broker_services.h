@@ -46,6 +46,8 @@ namespace crsio2 {
 
       Result AddHandleToShare(HANDLE handle) override;
 
+      Result AddRule(SubSystem subsystem, Semantics semantics, const wchar_t* pattern) override;
+
     private:
       scoped_refptr<sandbox::TargetPolicy> inner_;
   };

@@ -11,6 +11,7 @@ use self::winapi::*;
 use self::kernel32::*;
 
 #[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TokenLevel {
     Lockdown = 0,
     Restricted,
@@ -22,6 +23,7 @@ pub enum TokenLevel {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum JobLevel {
     Lockdown = 0,
     Restricted,
@@ -32,6 +34,7 @@ pub enum JobLevel {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IntegrityLevel {
     System,
     High,
@@ -40,6 +43,35 @@ pub enum IntegrityLevel {
     Low,
     BelowLow,
     Untrusted,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RuleSubSystem {
+    Files,             
+    NamedPipes,       
+    Process,           
+    Registry,          
+    Synchronization,              
+    Lockdown,    
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RuleSemantics {
+    FilesAllowAny,       
+    FilesAllowReadOnly,  
+    FilesAllowQuery,     
+    FilesAllowDirAny,   
+    NamedPipesAllowAny,  
+    ProcessMinExec,      
+    ProcessAllExec,      
+    EventsAllowAny,      
+    EventsAllowReadOnly, 
+    RegistryAllowReadOnly,    
+    RegistryAllowAny,         
+    FakeUserGdiImpl,    
+    ImplementOpmApis,     
 }
 
 impl Policy {
@@ -102,10 +134,30 @@ impl Policy {
         Ok(())
     }
 
+    pub unsafe fn set_stderr_handle(&mut self, handle: HANDLE) -> Result<()> {
+        try_sb!(sys::sandbox_policy_set_stderr_handle(self.0, handle));
+
+        Ok(())
+    }
+
     pub unsafe fn add_handle_to_share(&mut self, handle: HANDLE) -> Result<()> {
         try_sb!(sys::sandbox_policy_add_handle_to_share(self.0, handle));
 
         Ok(())
+    }
+
+    pub fn add_rule<P>(&mut self, subsystem: RuleSubSystem, semantics: RuleSemantics, pattern: P) -> Result<()> where
+        P: AsRef<OsStr>,
+    {
+        let mut string_pattern: Vec<u16> = pattern.as_ref()
+                .encode_wide()
+                .collect();
+        string_pattern.push(0);
+
+        unsafe {
+            try_sb!(sys::sandbox_policy_add_rule(self.0, mem::transmute(subsystem), mem::transmute(semantics), string_pattern.as_ptr()));
+            Ok(())
+        }
     }
 }
 

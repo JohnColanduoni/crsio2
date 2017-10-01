@@ -105,12 +105,20 @@ Result PolicyImpl::SetStdoutHandle(void* handle) {
   return ChromiumError::AsResult(inner_->SetStdoutHandle(handle));
 }
 Result PolicyImpl::SetStderrHandle(void* handle) {
-  return ChromiumError::AsResult(inner_->SetStdoutHandle(handle));
+  return ChromiumError::AsResult(inner_->SetStderrHandle(handle));
 }
 
 Result PolicyImpl::AddHandleToShare(void* handle) {
   inner_->AddHandleToShare(handle);
   return Result::Ok();
+}
+
+Result PolicyImpl::AddRule(Policy::SubSystem subsystem, Policy::Semantics semantics, const wchar_t* pattern) {
+  return ChromiumError::AsResult(inner_->AddRule(
+    static_cast<sandbox::TargetPolicy::SubSystem>(subsystem),
+    static_cast<sandbox::TargetPolicy::Semantics>(semantics),
+    pattern
+  ));
 }
 
 TargetProcessImpl::~TargetProcessImpl() {
@@ -161,4 +169,8 @@ sandbox_error_t sandbox_policy_add_handle_to_share(sandbox_policy_t policy, void
 
 void* sandbox_target_process_get_process_information(sandbox_target_process_t process) {
   return (void*)process->GetProcessInformation();
+}
+
+sandbox_error_t sandbox_policy_add_rule(sandbox_policy_t policy, sandbox_rule_subsystem_t subsystem, sandbox_rule_semantics_t semantics, const wchar_t* pattern) {
+  return policy->AddRule(subsystem, semantics, pattern).TakeRaw();
 }

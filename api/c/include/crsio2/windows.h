@@ -39,6 +39,7 @@ namespace crsio2 {
     INTEGRITY_LEVEL_LAST
   };
 
+
   class BrokerServices : public BaseBrokerServices {
     public:
       static BrokerServices* GetInstance();
@@ -66,6 +67,33 @@ namespace crsio2 {
       virtual Result SetStderrHandle(void* handle) = 0;
 
       virtual Result AddHandleToShare(void* handle) = 0;
+
+      enum SubSystem {
+        SUBSYS_FILES,             
+        SUBSYS_NAMED_PIPES,       
+        SUBSYS_PROCESS,           
+        SUBSYS_REGISTRY,          
+        SUBSYS_SYNC,              
+        SUBSYS_WIN32K_LOCKDOWN    
+      };
+
+      enum Semantics {
+        FILES_ALLOW_ANY,       
+        FILES_ALLOW_READONLY,  
+        FILES_ALLOW_QUERY,     
+        FILES_ALLOW_DIR_ANY,   
+        NAMEDPIPES_ALLOW_ANY,  
+        PROCESS_MIN_EXEC,      
+        PROCESS_ALL_EXEC,      
+        EVENTS_ALLOW_ANY,      
+        EVENTS_ALLOW_READONLY, 
+        REG_ALLOW_READONLY,    
+        REG_ALLOW_ANY,         
+        FAKE_USER_GDI_INIT,    
+        IMPLEMENT_OPM_APIS     
+      };
+
+      virtual Result AddRule(SubSystem subsystem, Semantics semantics, const wchar_t* pattern) = 0;
   };
 
   class TargetProcess : public BaseTargetProcess {
@@ -104,6 +132,31 @@ namespace crsio2 {
     INTEGRITY_LEVEL_UNTRUSTED,
     INTEGRITY_LEVEL_LAST
   } sandbox_integrity_level_t;
+
+  typedef enum _sandbox_rule_subsystem_t {
+    SUBSYS_FILES,             
+    SUBSYS_NAMED_PIPES,       
+    SUBSYS_PROCESS,           
+    SUBSYS_REGISTRY,          
+    SUBSYS_SYNC,              
+    SUBSYS_WIN32K_LOCKDOWN    
+  } sandbox_rule_subsystem_t;
+
+  typedef enum _sandbox_rule_semantics_t {
+    FILES_ALLOW_ANY,       
+    FILES_ALLOW_READONLY,  
+    FILES_ALLOW_QUERY,     
+    FILES_ALLOW_DIR_ANY,   
+    NAMEDPIPES_ALLOW_ANY,  
+    PROCESS_MIN_EXEC,      
+    PROCESS_ALL_EXEC,      
+    EVENTS_ALLOW_ANY,      
+    EVENTS_ALLOW_READONLY, 
+    REG_ALLOW_READONLY,    
+    REG_ALLOW_ANY,         
+    FAKE_USER_GDI_INIT,    
+    IMPLEMENT_OPM_APIS     
+  } sandbox_rule_semantics_t;
 #endif
 
 #ifdef __cplusplus
@@ -114,6 +167,8 @@ extern "C" {
 typedef crsio2::TokenLevel sandbox_token_level_t;
 typedef crsio2::JobLevel sandbox_job_level_t;
 typedef crsio2::IntegrityLevel sandbox_integrity_level_t;
+typedef crsio2::Policy::SubSystem sandbox_rule_subsystem_t;
+typedef crsio2::Policy::Semantics sandbox_rule_semantics_t;
 #endif
 
 sandbox_error_t sandbox_policy_set_token_level(sandbox_policy_t policy, sandbox_token_level_t initial, sandbox_token_level_t lockdown);
@@ -125,6 +180,7 @@ sandbox_error_t sandbox_policy_set_low_box(sandbox_policy_t policy, const wchar_
 sandbox_error_t sandbox_policy_set_stdout_handle(sandbox_policy_t policy, void* handle);
 sandbox_error_t sandbox_policy_set_stderr_handle(sandbox_policy_t policy, void* handle);
 sandbox_error_t sandbox_policy_add_handle_to_share(sandbox_policy_t policy, void* handle);
+sandbox_error_t sandbox_policy_add_rule(sandbox_policy_t policy, sandbox_rule_subsystem_t subsystem, sandbox_rule_semantics_t semantics, const wchar_t* pattern);
 
 void* sandbox_target_process_get_process_information(sandbox_target_process_t process);
 
