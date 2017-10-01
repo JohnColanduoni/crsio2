@@ -1,7 +1,7 @@
 extern crate bindgen;
 extern crate glob;
 
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 use std::fs;
 use std::env;
 use std::process::Command;
@@ -10,6 +10,11 @@ fn main() {
     let out_dir: PathBuf = env::var("OUT_DIR").unwrap().into();
     let target = env::var("TARGET").unwrap();
     let is_debug = env::var("DEBUG").unwrap() == "true";
+    let crt_static = env::var("CARGO_CFG_TARGET_FEATURE").map(|x| x.contains("crt-static")).unwrap_or(false);
+
+    if crt_static {
+        println!("static-crt detected");
+    }
 
     // Build crsio2 via cmake
     let src_dir = env::current_dir().unwrap().join("../../");
@@ -27,14 +32,21 @@ fn main() {
             cmake_command
                 .arg("-DCMAKE_GENERATOR_PLATFORM=x86");
         }
+
+        if crt_static {
+            cmake_command.arg("-DMSVC_RUNTIME=static");
+        }
     }
 
     cmake_command.arg(&src_dir);
     call_command(&mut cmake_command);
 
-    call_command(Command::new("cmake")
-        .arg("--build").arg(&cmake_build_dir)
-    );
+    let mut build_command = Command::new("cmake");
+
+    build_command
+        .arg("--build").arg(&cmake_build_dir);
+
+    call_command(&mut build_command);
     if target.contains("windows") {
         if is_debug {
             println!("cargo:rustc-link-search=native={}/chromium/Debug", cmake_build_dir.to_str().unwrap());
@@ -68,7 +80,7 @@ fn main() {
     let include_dir = src_dir.join("api/c/include");
        
     {
-        let mut bindings = bindgen::Builder::default()
+        let bindings = bindgen::Builder::default()
             .header(include_dir.join("crsio2.h").to_str().unwrap())
             .clang_arg(format!("-I{}", include_dir.to_str().unwrap()));
 
