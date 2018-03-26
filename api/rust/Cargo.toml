@@ -10,8 +10,7 @@ name = "basic_broker"
 harness = false
 
 [target.'cfg(target_os = "windows")'.dependencies]
-winapi = "*"
-kernel32-sys = "*"
+winapi = { version = "0.3", features = ["ntdef", "processthreadsapi", "namedpipeapi"] }
 
 [build-dependencies]
 bindgen = "0.23"
@@ -19,5 +18,3 @@ glob = "0.2"
 
 [dev-dependencies]
 rand = "0.3"
-winapi = "*"
-kernel32-sys = "*"

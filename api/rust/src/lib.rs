@@ -1,6 +1,5 @@
 use std::path::Path;
 use std::fmt;
-use std::io;
 use std::sync::{Once, ONCE_INIT};
 use std::ptr;
 use std::ffi::{OsStr, CStr};

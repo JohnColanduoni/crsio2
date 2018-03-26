@@ -1,14 +1,11 @@
 use super::*;
 
 use std::mem;
-use std::os::raw::c_void;
-use std::io;
 
 extern crate winapi;
-extern crate kernel32;
 
-use self::winapi::*;
-use self::kernel32::*;
+use self::winapi::shared::ntdef::{HANDLE};
+use self::winapi::um::processthreadsapi::{PROCESS_INFORMATION};
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -129,19 +126,19 @@ impl Policy {
     }
 
     pub unsafe fn set_stdout_handle(&mut self, handle: HANDLE) -> Result<()> {
-        try_sb!(sys::sandbox_policy_set_stdout_handle(self.0, handle));
+        try_sb!(sys::sandbox_policy_set_stdout_handle(self.0, mem::transmute(handle)));
 
         Ok(())
     }
 
     pub unsafe fn set_stderr_handle(&mut self, handle: HANDLE) -> Result<()> {
-        try_sb!(sys::sandbox_policy_set_stderr_handle(self.0, handle));
+        try_sb!(sys::sandbox_policy_set_stderr_handle(self.0, mem::transmute(handle)));
 
         Ok(())
     }
 
     pub unsafe fn add_handle_to_share(&mut self, handle: HANDLE) -> Result<()> {
-        try_sb!(sys::sandbox_policy_add_handle_to_share(self.0, handle));
+        try_sb!(sys::sandbox_policy_add_handle_to_share(self.0, mem::transmute(handle)));
 
         Ok(())
     }

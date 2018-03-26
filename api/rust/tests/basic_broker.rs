@@ -1,12 +1,12 @@
 extern crate crsio2;
 
 extern crate rand;
+#[cfg(target_os = "windows")]
+extern crate winapi;
 
 use std::mem;
 use std::ptr;
 use std::io::{self, Read, Write, BufRead};
-use std::ffi::{OsStr};
-use std::os::windows::ffi::OsStrExt;
 use std::os::windows::io::FromRawHandle;
 use std::path::PathBuf;
 use std::fs;
@@ -14,6 +14,7 @@ use std::env;
 
 use crsio2::*;
 use rand::Rng;
+
 
 fn main() {
     match init().unwrap() {
@@ -28,8 +29,9 @@ fn main() {
 
             #[cfg(target_os = "windows")]
             {
-                extern crate winapi;
-                extern crate kernel32;
+                use winapi::shared::minwindef::{DWORD, TRUE, FALSE};
+                use winapi::um::minwinbase::{SECURITY_ATTRIBUTES};
+                use winapi::um::namedpipeapi::{CreatePipe};
 
                 policy.set_token_level(TokenLevel::RestrictedSameAccess, TokenLevel::Lockdown).unwrap();
                 policy.set_job_level(JobLevel::Lockdown).unwrap();
@@ -41,23 +43,23 @@ fn main() {
                     let mut read_pipe = ptr::null_mut();
                     let mut write_pipe = ptr::null_mut();
 
-                    let mut sec_desc: winapi::SECURITY_ATTRIBUTES = mem::zeroed();
-                    sec_desc.nLength = mem::size_of_val(&sec_desc) as winapi::DWORD;
-                    sec_desc.bInheritHandle = winapi::TRUE;
+                    let mut sec_desc: SECURITY_ATTRIBUTES = mem::zeroed();
+                    sec_desc.nLength = mem::size_of_val(&sec_desc) as DWORD;
+                    sec_desc.bInheritHandle = TRUE;
 
-                    if kernel32::CreatePipe(
+                    if CreatePipe(
                         &mut read_pipe,
                         &mut write_pipe,
                         &mut sec_desc,
                         0,
-                    ) == winapi::FALSE {
+                    ) == FALSE {
                         panic!("CreatePipe failed");
                     }
 
                     policy.set_stdout_handle(write_pipe).unwrap();
                     policy.set_stderr_handle(write_pipe).unwrap();
 
-                    fs::File::from_raw_handle(read_pipe)
+                    fs::File::from_raw_handle(mem::transmute(read_pipe))
                 };
 
                 ::std::thread::spawn(move || {
