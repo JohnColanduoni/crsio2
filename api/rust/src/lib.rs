@@ -1,7 +1,6 @@
+use std::{fmt, ptr, error};
 use std::path::Path;
-use std::fmt;
 use std::sync::{Once, ONCE_INIT};
-use std::ptr;
 use std::ffi::{OsStr, CStr};
 #[cfg(target_os = "windows")]
 use std::os::windows::ffi::OsStrExt;
@@ -69,6 +68,22 @@ impl fmt::Debug for Error {
         let message = unsafe { CStr::from_ptr(sys::sandbox_error_description(self.0)) };
 
         write!(f, "{}", message.to_string_lossy())
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let message = unsafe { CStr::from_ptr(sys::sandbox_error_description(self.0)) };
+
+        write!(f, "{}", message.to_string_lossy())
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        let message = unsafe { CStr::from_ptr(sys::sandbox_error_description(self.0)) };
+
+        message.to_str().unwrap_or("Unknown")
     }
 }
 
